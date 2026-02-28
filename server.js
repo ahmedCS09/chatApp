@@ -1,6 +1,6 @@
-const http = require('http');
-const next = require('next');
-const { Server } = require("socket.io");
+import http from 'http';
+import next from 'next';
+import { Server } from "socket.io";
 
 const dev = process.env.NODE_ENV !== 'production';
 const app = next({ dev });
