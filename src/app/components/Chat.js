@@ -35,7 +35,14 @@ export default function Chat() {
     const sidebarRef = useRef(null);
     const chatBoxRef = useRef(null);
     const emptyStateRef = useRef(null);
-    const beep = new Audio("/msgBeep.wav");
+    const beepRef = useRef(null);
+
+    useEffect(() => {
+        setMounted(true);
+        if (typeof window !== "undefined") {
+            beepRef.current = new Audio("/msgBeep.wav");
+        }
+    }, []);
 
     // AI Mutation using TanStack Query
     const aiMutation = useMutation({
@@ -45,7 +52,7 @@ export default function Chat() {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["messages", selectedFriend?._id] });
-            beep.play();
+            beepRef.current?.play().catch(e => console.log("Audio play failed:", e));
         },
         onError: (err) => {
             const errorMessage = err.response?.data?.error || "AI Assistant is currently unavailable";
@@ -90,7 +97,7 @@ export default function Chat() {
                     sender: user._id,
                     message: data.message
                 });
-                beep.play();
+                beepRef.current?.play().catch(e => console.log("Audio play failed:", e));
                 queryClient.invalidateQueries({ queryKey: ["messages", selectedFriend?._id] });
             }
 
@@ -118,9 +125,7 @@ export default function Chat() {
         enabled: !!selectedFriend
     });
 
-    useEffect(() => {
-        setMounted(true);
-    }, []);
+
 
     // Scroll when messages update
     useEffect(() => {
