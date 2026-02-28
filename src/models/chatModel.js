@@ -29,11 +29,6 @@ const chatSchema = new mongoose.Schema({
     }
 });
 
-// Force clear the cached model to ensure schema updates like 'senderName' are applied
-if (mongoose.models.Chat) {
-    delete mongoose.models.Chat;
-}
-
-const Chat = mongoose.model("Chat", chatSchema);
+const Chat = mongoose.models.Chat || mongoose.model("Chat", chatSchema);
 
 export default Chat;
