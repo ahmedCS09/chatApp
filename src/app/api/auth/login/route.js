@@ -1,4 +1,4 @@
-import { loginUser } from "@/lib/controllers/auth";
+import { loginUser } from "@/lib/controllers/auth.js";
 
 export async function POST(req) {
     console.log("Login route hit");

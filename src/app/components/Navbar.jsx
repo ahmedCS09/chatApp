@@ -50,13 +50,14 @@ const Navbar = () => {
     }, [setUser]);
 
     useEffect(() => {
+        if (!user || user.role === 'admin') return;
         const fetchNotifications = async () => {
             const res = await axios.get("/api/friendRequest/getUnreadNotifications");
             if (res.data) console.log("Unread notifications:", res.data.length);
         };
 
         fetchNotifications();
-    }, []);
+    }, [user]);
 
     // Socket Connection for Global Events
     useEffect(() => {
@@ -64,6 +65,7 @@ const Navbar = () => {
 
         console.log("[NAVBAR] Connecting socket to:", process.env.NEXT_PUBLIC_SOCKET_URL);
         console.log("[NAVBAR] User ID:", user._id);
+        const isAdmin = user.role === 'admin';
 
         socketRef.current = io(process.env.NEXT_PUBLIC_SOCKET_URL, {
             path: "/api/socket/io",
@@ -80,83 +82,70 @@ const Navbar = () => {
             console.error("❌ [SOCKET] Connection Error:", error);
         });
 
-        socketRef.current.on("newMessage", (data) => {
-            console.log("🔔 [SOCKET] newMessage received:", data);
-
-            // Show toast notification
-            toast.success(`${data.senderName || "New Message"}`, {
-                description: data.message,
-                duration: 5000,
-            });
-
-            // Refresh relevant data
-            queryClient.invalidateQueries({ queryKey: ["friends"] });
-            queryClient.invalidateQueries({ queryKey: ["messages", data.sender] });
-        });
-
-        socketRef.current.on("reqAcceptedNotification", async (data) => {
-            toast.success("Your friend request was accepted!");
-
-            // Instantly update caches
-            queryClient.invalidateQueries({ queryKey: ["pendingRequests"] });
-            queryClient.invalidateQueries({ queryKey: ["users"] });
-            queryClient.invalidateQueries({ queryKey: ["friends"] });
-
-            try {
-                await axios.post("/api/friendRequest/markNotificationAsRead", {
-                    notificationId: data?.notificationId
+        if (!isAdmin) {
+            socketRef.current.on("newMessage", (data) => {
+                console.log("🔔 [SOCKET] newMessage received:", data);
+                toast.success(`${data.senderName || "New Message"}`, {
+                    description: data.message,
+                    duration: 5000,
                 });
-            } catch (error) {
-                console.error("Error marking notification as read:", error);
-            }
-        });
-
-        socketRef.current.on("friendRequest", (data) => {
-            console.log("[NAVBAR] friendRequest received:", data);
-
-            // Invalidate and Force Refetch immediately for real-time UI updates
-            queryClient.invalidateQueries({ queryKey: ["pendingRequests"] });
-            queryClient.refetchQueries({ queryKey: ["pendingRequests"], type: "active" });
-            queryClient.invalidateQueries({ queryKey: ["users"] });
-
-            toast(`${data.senderName} sent you a friend request!`, {
-                description: "Do you want to accept?",
-                action: {
-                    label: "Accept",
-                    onClick: async () => {
-                        try {
-                            await axios.post("/api/friendRequest/acceptRequest", { requestId: data.requestId });
-                            toast.success(`${data.senderName} is now your friend`);
-                            queryClient.invalidateQueries({ queryKey: ["pendingRequests"] });
-                            queryClient.invalidateQueries({ queryKey: ["users"] });
-                            queryClient.invalidateQueries({ queryKey: ["friends"] });
-                        } catch (error) {
-                            toast.error("Failed to accept request");
-                        }
-                    },
-                },
-                cancel: {
-                    label: "Dismiss",
-                    onClick: async () => {
-                        try {
-                            await axios.post("/api/friendRequest/removeFriend", { requestId: data.requestId });
-                            toast.info("Friend request dismissed");
-                            queryClient.invalidateQueries({ queryKey: ["pendingRequests"] });
-                            queryClient.invalidateQueries({ queryKey: ["users"] });
-                        } catch (error) {
-                            console.error("Error dismissing request:", error);
-                            toast.error("Failed to dismiss request");
-                        }
-                    },
-                },
-                duration: 8000,
+                queryClient.invalidateQueries({ queryKey: ["friends"] });
+                queryClient.invalidateQueries({ queryKey: ["messages", data.sender] });
             });
-        });
 
-        socketRef.current.on("friendRemoved", (data) => {
-            queryClient.invalidateQueries({ queryKey: ["pendingRequests"] });
-            queryClient.invalidateQueries({ queryKey: ["users"] });
-        });
+            socketRef.current.on("reqAcceptedNotification", async (data) => {
+                toast.success("Your friend request was accepted!");
+                queryClient.invalidateQueries({ queryKey: ["pendingRequests"] });
+                queryClient.invalidateQueries({ queryKey: ["users"] });
+                queryClient.invalidateQueries({ queryKey: ["friends"] });
+                try {
+                    await axios.post("/api/friendRequest/markNotificationAsRead", {
+                        notificationId: data?.notificationId
+                    });
+                } catch (err) {
+                    console.error("Error marking notification:", err);
+                }
+            });
+
+            socketRef.current.on("friendRequest", (data) => {
+                queryClient.invalidateQueries({ queryKey: ["pendingRequests"] });
+                queryClient.refetchQueries({ queryKey: ["pendingRequests"], type: "active" });
+                queryClient.invalidateQueries({ queryKey: ["users"] });
+
+                toast(`${data.senderName} sent you a friend request!`, {
+                    description: "Do you want to accept?",
+                    action: {
+                        label: "Accept",
+                        onClick: async () => {
+                            try {
+                                await axios.post("/api/friendRequest/acceptRequest", { requestId: data.requestId });
+                                toast.success(`${data.senderName} is now your friend`);
+                                queryClient.invalidateQueries({ queryKey: ["pendingRequests"] });
+                                queryClient.invalidateQueries({ queryKey: ["users"] });
+                                queryClient.invalidateQueries({ queryKey: ["friends"] });
+                            } catch (error) { toast.error("Failed to accept request"); }
+                        },
+                    },
+                    cancel: {
+                        label: "Dismiss",
+                        onClick: async () => {
+                            try {
+                                await axios.post("/api/friendRequest/removeFriend", { requestId: data.requestId });
+                                toast.info("Friend request dismissed");
+                                queryClient.invalidateQueries({ queryKey: ["pendingRequests"] });
+                                queryClient.invalidateQueries({ queryKey: ["users"] });
+                            } catch (error) { toast.error("Failed to dismiss request"); }
+                        },
+                    },
+                    duration: 8000,
+                });
+            });
+
+            socketRef.current.on("friendRemoved", (data) => {
+                queryClient.invalidateQueries({ queryKey: ["pendingRequests"] });
+                queryClient.invalidateQueries({ queryKey: ["users"] });
+            });
+        }
 
         return () => {
             if (socketRef.current) {
@@ -170,7 +159,7 @@ const Navbar = () => {
     if (!mounted) return null;
 
     return (
-        <nav className="fixed top-0 left-0 w-full z-[1000] bg-white/80 backdrop-blur-md border-b border-white/20 shadow-sm px-6 py-4">
+        <nav className="absolute top-0 left-0 w-full z-[1000] bg-slate-950/80 backdrop-blur-md border-b border-white/5 shadow-sm px-6 py-4">
             <div className="max-w-7xl mx-auto flex items-center justify-between">
                 {/* Logo Section */}
                 <div className="flex items-center gap-4">
@@ -182,17 +171,21 @@ const Navbar = () => {
                     {!isLoginRegisterPage && !isLandingPage && (
                         <div className="flex items-center gap-2">
                             <NavLink href="/auth/dashboardPage" currentPath={pathname} icon={<Home className="w-5 h-5" />} label="Dashboard" />
-                            <NavLink href="/friends/renderFriendsPage" currentPath={pathname} icon={<Users className="w-5 h-5" />} label="Friends" />
-                            <NavLink href="/chat/chatPage" currentPath={pathname} icon={<MessageCircle className="w-5 h-5" />} label="Chat" />
+                            {user?.role !== 'admin' && (
+                                <>
+                                    <NavLink href="/friends/renderFriendsPage" currentPath={pathname} icon={<Users className="w-5 h-5" />} label="Friends" />
+                                    <NavLink href="/chat/chatPage" currentPath={pathname} icon={<MessageCircle className="w-5 h-5" />} label="Chat" />
+                                </>
+                            )}
                         </div>
                     )}
 
-                    <div className="flex items-center gap-4 border-l border-gray-200 pl-6 ml-2">
+                    <div className="flex items-center gap-4 border-l border-slate-800 pl-6 ml-2">
                         {user ? (
                             <>
                                 <button
                                     onClick={handleLogout}
-                                    className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors font-medium"
+                                    className="flex items-center gap-2 px-4 py-2 text-slate-400 hover:text-red-400 hover:bg-red-950/30 rounded-lg transition-colors font-medium"
                                 >
                                     <LogOut className="w-5 h-5" />
                                     <span>Logout</span>
@@ -220,7 +213,7 @@ const Navbar = () => {
                 {/* Mobile Menu Toggle */}
                 <button
                     onClick={toggleMobileMenu}
-                    className="md:hidden p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                    className="md:hidden p-2 text-slate-400 hover:bg-slate-900 rounded-lg transition-colors"
                 >
                     <span className="text-2xl">{isMobileMenuOpen ? '✕' : '☰'}</span>
                 </button>
@@ -228,7 +221,7 @@ const Navbar = () => {
 
             {/* Mobile Dropdown */}
             {isMobileMenuOpen && (
-                <div className="md:hidden absolute top-full left-0 right-0 bg-white border-b border-gray-100 shadow-xl overflow-hidden animate-in slide-in-from-top duration-300">
+                <div className="md:hidden absolute top-full left-0 right-0 bg-slate-900 border-b border-slate-800 shadow-xl overflow-hidden animate-in slide-in-from-top duration-300">
                     <div className="flex flex-col p-4 gap-2">
                         {!user && !isLoginRegisterPage && !authLoading && (
                             <MobileNavLink href="/auth/loginPage" onClick={toggleMobileMenu} icon={<LogIn className="w-5 h-5" />} label="Login" />
@@ -237,16 +230,20 @@ const Navbar = () => {
                         {!isLoginRegisterPage && !isLandingPage && (
                             <>
                                 <MobileNavLink href="/auth/dashboardPage" onClick={toggleMobileMenu} icon={<Home className="w-5 h-5" />} label="Dashboard" />
-                                <MobileNavLink href="/friends/renderFriendsPage" onClick={toggleMobileMenu} icon={<Users className="w-5 h-5" />} label="Friends" />
-                                <MobileNavLink href="/chat/chatPage" onClick={toggleMobileMenu} icon={<MessageCircle className="w-5 h-5" />} label="Chat" />
+                                {user?.role !== 'admin' && (
+                                    <>
+                                        <MobileNavLink href="/friends/renderFriendsPage" onClick={toggleMobileMenu} icon={<Users className="w-5 h-5" />} label="Friends" />
+                                        <MobileNavLink href="/chat/chatPage" onClick={toggleMobileMenu} icon={<MessageCircle className="w-5 h-5" />} label="Chat" />
+                                    </>
+                                )}
                             </>
                         )}
 
                         {user && (
-                            <div className="mt-4 pt-4 border-t border-gray-100 flex flex-col gap-2">
+                            <div className="mt-4 pt-4 border-t border-slate-800 flex flex-col gap-2">
                                 <Link
                                     href="/auth/profilePage"
-                                    className="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg transition-colors text-gray-700 font-medium"
+                                    className="flex items-center gap-3 p-3 hover:bg-slate-800 rounded-lg transition-colors text-slate-300 font-medium"
                                     onClick={toggleMobileMenu}
                                 >
                                     <ProfileIconSmall user={user} />
@@ -254,7 +251,7 @@ const Navbar = () => {
                                 </Link>
                                 <button
                                     onClick={() => { handleLogout(); toggleMobileMenu(); }}
-                                    className="flex items-center gap-3 p-3 text-red-500 hover:bg-red-50 rounded-lg transition-colors font-medium w-full text-left"
+                                    className="flex items-center gap-3 p-3 text-red-400 hover:bg-red-950/30 rounded-lg transition-colors font-medium w-full text-left"
                                 >
                                     <LogOut className="w-5 h-5" />
                                     Logout
@@ -275,8 +272,8 @@ const NavLink = ({ href, currentPath, icon, label }) => {
         <Link
             href={href}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${isActive
-                ? "bg-blue-50 text-blue-600 shadow-sm"
-                : "text-gray-600 hover:bg-gray-50 hover:text-blue-600"
+                ? "bg-indigo-600/20 text-indigo-400 shadow-sm"
+                : "text-slate-400 hover:bg-slate-900 hover:text-indigo-400"
                 }`}
         >
             {icon}
@@ -289,15 +286,15 @@ const MobileNavLink = ({ href, icon, label, onClick }) => (
     <Link
         href={href}
         onClick={onClick}
-        className="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg transition-colors text-gray-700 font-medium"
+        className="flex items-center gap-3 p-3 hover:bg-slate-800 rounded-lg transition-colors text-slate-300 font-medium"
     >
-        <div className="text-blue-500">{icon}</div>
+        <div className="text-indigo-400">{icon}</div>
         {label}
     </Link>
 );
 
 const ProfileIcon = ({ user }) => (
-    <div className="w-10 h-10 rounded-full border-2 border-white shadow-sm overflow-hidden bg-gray-100 flex items-center justify-center">
+    <div className="w-10 h-10 rounded-full border-2 border-slate-800 shadow-sm overflow-hidden bg-slate-900 flex items-center justify-center">
         {user?.image ? (
             <img src={user?.image} alt="Profile" className="w-full h-full object-cover" />
         ) : (
@@ -307,7 +304,7 @@ const ProfileIcon = ({ user }) => (
 );
 
 const ProfileIconSmall = ({ user }) => (
-    <div className="w-8 h-8 rounded-full border border-gray-200 overflow-hidden bg-gray-50 flex items-center justify-center">
+    <div className="w-8 h-8 rounded-full border border-slate-800 overflow-hidden bg-slate-900 flex items-center justify-center">
         {user?.image ? (
             <img src={user?.image} alt="Profile" className="w-full h-full object-cover" />
         ) : (

@@ -69,6 +69,8 @@ export async function registerUser(req) {
                 fullName: newUser.fullName,
                 email: newUser.email,
                 _id: newUser._id,
+                role: newUser.role,
+                image: newUser.image,
                 token: token
             }
         }, {
@@ -112,6 +114,8 @@ export async function loginUser(req) {
                 fullName: findUser.fullName,
                 email: findUser.email,
                 _id: findUser._id,
+                role: findUser.role,
+                image: findUser.image,
                 token: token
             }
         }, {
@@ -184,29 +188,42 @@ export async function getAllUsers(req) {
 
         const search = req.nextUrl.searchParams.get("search") || "";
 
-        // 🔥 Get accepted friends
-        const acceptedFriends = await FriendRequest.find({
-            status: "accepted",
-            $or: [
-                { sender: currentUserID },
-                { receiver: currentUserID }
-            ]
-        });
+        const requester = await User.findById(currentUserID);
+        const isAdmin = requester?.role === "admin";
 
-        // Extract friend user IDs
-        const friendIds = acceptedFriends.map(req =>
-            req.sender.toString() === currentUserID
-                ? req.receiver.toString()
-                : req.sender.toString()
-        );
+        // 🔥 Fetch users
+        let users;
+        if (isAdmin) {
+            // Admin sees ALL users EXCEPT themselves and AI
+            users = await User.find({
+                _id: { $ne: currentUserID },
+                email: { $ne: "ai@chatty.com" },
+                fullName: { $regex: search, $options: "i" }
+            }).select("-password");
+        } else {
+            // 🔥 Get accepted friends
+            const acceptedFriends = await FriendRequest.find({
+                status: "accepted",
+                $or: [
+                    { sender: currentUserID },
+                    { receiver: currentUserID }
+                ]
+            });
 
-        // 🔥 Fetch users EXCEPT yourself & accepted friends
-        const users = await User.find({
-            _id: {
-                $nin: [currentUserID, ...friendIds]
-            },
-            fullName: { $regex: search, $options: "i" }
-        }).select("-password");
+            // Extract friend user IDs
+            const friendIds = acceptedFriends.map(req =>
+                req.sender.toString() === currentUserID
+                    ? req.receiver.toString()
+                    : req.sender.toString()
+            );
+
+            // Fetch users EXCEPT yourself, accepted friends, and AI
+            users = await User.find({
+                _id: { $nin: [currentUserID, ...friendIds] },
+                email: { $ne: "ai@chatty.com" },
+                fullName: { $regex: search, $options: "i" }
+            }).select("-password");
+        }
 
         return NextResponse.json({ users });
 

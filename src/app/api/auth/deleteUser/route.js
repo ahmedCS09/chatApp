@@ -3,6 +3,7 @@ import { dbConnect } from "@/lib/mongodb";
 import User from "@/models/userModel";
 import Chat from "@/models/chatModel";
 import FriendRequest from "@/models/friendRequestModel";
+import Notification from "@/models/NotificationModel";
 import { verifyToken } from "@/lib/utils/tokenUtils";
 import { cookies } from "next/headers";
 
@@ -49,9 +50,10 @@ export async function DELETE(req) {
             return NextResponse.json({ message: "Admins cannot delete their own accounts from this menu" }, { status: 400 });
         }
 
-        // Delete associated records
+        // Delete associated records 
         await Chat.deleteMany({ $or: [{ sender: userId }, { receiver: userId }] });
         await FriendRequest.deleteMany({ $or: [{ sender: userId }, { receiver: userId }] });
+        await Notification.deleteMany({ $or: [{ sender: userId }, { receiver: userId }] });
         await User.findByIdAndDelete(userId);
 
         return NextResponse.json({ message: "User and all associated data deleted successfully" }, { status: 200 });

@@ -175,15 +175,15 @@ export default function DashboardPage() {
   if (!mounted) return null;
 
   return (
-    <div ref={containerRef} className="min-h-screen bg-slate-50 py-12 px-4 pt-32 sm:px-6 lg:px-8 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] bg-fixed">
+    <div ref={containerRef} className="min-h-screen bg-[#020617] py-12 px-4 pt-32 sm:px-6 lg:px-8 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] bg-fixed">
       {/* Abstract Background Decoration */}
-      <div className="fixed top-0 right-0 w-[500px] h-[500px] bg-indigo-500/5 blur-[120px] rounded-full -z-10 pointer-events-none"></div>
+      <div className="fixed top-0 right-0 w-[500px] h-[500px] bg-indigo-500/10 blur-[120px] rounded-full -z-10 pointer-events-none"></div>
       <div className="fixed bottom-0 left-0 w-[500px] h-[500px] bg-purple-500/5 blur-[120px] rounded-full -z-10 pointer-events-none"></div>
 
       <div className="max-w-4xl mx-auto space-y-10 relative">
         {/* Header Section */}
         <div ref={headerRef} className="flex flex-col items-center text-center space-y-4">
-          <div ref={iconRef} className="p-4 bg-indigo-600 rounded-2xl shadow-xl shadow-indigo-200 ring-8 ring-indigo-50 relative">
+          <div ref={iconRef} className="p-4 bg-indigo-600 rounded-2xl shadow-xl shadow-indigo-500/20 ring-8 ring-indigo-950/20 relative">
             <Users className="w-12 h-12 text-white" />
             <div className="absolute -top-2 -right-2 bg-yellow-400 p-1.5 rounded-lg shadow-lg">
               <Sparkles className="w-4 h-4 text-white" />
@@ -191,26 +191,26 @@ export default function DashboardPage() {
           </div>
           <div className="flex flex-col items-center">
             {user && (
-              <div className="mb-4 inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/80 backdrop-blur-md border border-indigo-100/50 text-indigo-600 text-sm font-bold tracking-tight shadow-lg shadow-indigo-100/50 transform hover:scale-105 transition-all duration-300">
+              <div className="mb-4 inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-900/50 backdrop-blur-md border border-white/5 text-indigo-400 text-sm font-bold tracking-tight shadow-xl transform hover:scale-105 transition-all duration-300">
                 {user.image ? (
-                  <img src={user.image} className="w-6 h-6 rounded-full object-cover border border-indigo-100" alt="" />
+                  <img src={user.image} className="w-6 h-6 rounded-full object-cover border border-slate-800" alt="" />
                 ) : (
                   <span className="relative flex h-2.5 w-2.5">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
                     <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-indigo-600"></span>
                   </span>
                 )}
-                {new Date().getHours() < 12 ? "Good morning" : new Date().getHours() < 18 ? "Good afternoon" : "Good evening"}, <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 ml-1">{user.fullName}</span>
+                {new Date().getHours() < 12 ? "Good morning" : new Date().getHours() < 18 ? "Good afternoon" : "Good evening"}, <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-purple-400 ml-1">{user.fullName}</span>
               </div>
             )}
-            <h1 className="text-4xl sm:text-5xl font-extrabold text-slate-900 tracking-tight leading-tight">
+            <h1 className="text-4xl sm:text-5xl font-extrabold text-white tracking-tight leading-tight">
               {user?.role === "admin" ? (
-                <>Admin <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600">Console</span></>
+                <>Admin <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-purple-400">Console</span></>
               ) : (
-                <>Grow your <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600">Circle</span></>
+                <>Grow your <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-purple-400">Circle</span></>
               )}
             </h1>
-            <p className="mt-4 text-lg text-slate-600 font-medium max-w-lg mx-auto">
+            <p className="mt-4 text-lg text-slate-400 font-medium max-w-lg mx-auto">
               {user?.role === "admin"
                 ? "Manage users, oversee activities, and keep the community healthy."
                 : "Find and connect with people in the Chatty community."}
@@ -221,28 +221,28 @@ export default function DashboardPage() {
         {/* Search & Filter Section */}
         <div ref={searchRef} className="relative max-w-lg mx-auto group">
           <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-            <Search className="h-5 w-5 text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
+            <Search className="h-5 w-5 text-slate-500 group-focus-within:text-indigo-400 transition-colors" />
           </div>
           <input
             type="text"
             placeholder={user?.role === "admin" ? "Search members by name or ID..." : "Search by name..."}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="block w-full pl-12 pr-4 py-4 bg-white border border-slate-200 rounded-2xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 shadow-sm transition-all text-lg"
+            className="block w-full pl-12 pr-4 py-4 bg-slate-900/50 border border-white/5 rounded-2xl text-white placeholder-slate-500 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 shadow-sm transition-all text-lg backdrop-blur-sm"
           />
         </div>
 
         {/* Content Area */}
-        <div ref={listRef} className="bg-white rounded-[2.5rem] border border-slate-200/60 shadow-2xl shadow-slate-200/60 min-h-[400px]">
+        <div ref={listRef} className="bg-slate-900/50 backdrop-blur-xl rounded-[2.5rem] border border-white/5 shadow-2xl min-h-[400px] overflow-hidden">
           {isLoading ? (
             <div className="flex flex-col items-center justify-center py-32 space-y-4">
               <div className="relative">
-                <div className="w-16 h-16 border-4 border-slate-100 border-t-indigo-600 rounded-full animate-spin"></div>
+                <div className="w-16 h-16 border-4 border-slate-800 border-t-indigo-500 rounded-full animate-spin"></div>
               </div>
               <p className="text-slate-500 font-semibold animate-pulse">Scanning the community...</p>
             </div>
           ) : users && users.length > 0 ? (
-            <div className="grid grid-cols-1 divide-y divide-slate-100 p-2">
+            <div className="grid grid-cols-1 divide-y divide-white/5 p-2">
               {users.map((u, index) => {
                 const outgoingRequest = getOutgoingRequest(u._id);
                 const isSending = sendMutation.isPending && sendMutation.variables === u._id;
@@ -251,23 +251,23 @@ export default function DashboardPage() {
                 return (
                   <div
                     key={u._id}
-                    className="user-card group p-6 hover:bg-slate-50 transition-all rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-6 relative z-10 opacity-100"
+                    className="user-card group p-6 hover:bg-white/5 transition-all rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-6 relative z-10 opacity-100"
                   >
                     <div className="flex items-center gap-5 w-full sm:w-auto">
                       <div className="relative">
-                        <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-2xl shadow-lg transform group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
+                        <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-600 to-purple-700 flex items-center justify-center text-white font-bold text-2xl shadow-lg transform group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
                           {u.image ? (
                             <img src={u.image} alt={u.fullName} className="w-full h-full object-cover rounded-2xl" />
                           ) : (
                             u.fullName?.charAt(0).toUpperCase()
                           )}
                         </div>
-                        <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 border-4 border-white rounded-full"></div>
+                        <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 border-4 border-slate-900 rounded-full shadow-lg"></div>
                       </div>
                       <div className="flex flex-col">
-                        <h3 className="text-xl font-bold text-slate-900 tracking-tight">{u.fullName}</h3>
-                        <div className="flex items-center gap-1.5 text-slate-600 text-sm font-medium">
-                          <span className="w-2 h-2 rounded-full bg-green-500"></span>
+                        <h3 className="text-xl font-bold text-white tracking-tight">{u.fullName}</h3>
+                        <div className="flex items-center gap-1.5 text-slate-500 text-sm font-medium">
+                          <span className="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.4)]"></span>
                           Available to chat
                         </div>
                       </div>
@@ -283,7 +283,7 @@ export default function DashboardPage() {
                             }
                           }}
                           disabled={deleteUserMutation.isPending}
-                          className="p-2.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all border border-transparent hover:border-red-100"
+                          className="p-2.5 text-slate-500 hover:text-red-400 hover:bg-red-400/10 rounded-xl transition-all border border-transparent hover:border-red-400/20"
                           title="Delete User"
                         >
                           {deleteUserMutation.isPending && deleteUserMutation.variables === u._id ? (
@@ -298,7 +298,7 @@ export default function DashboardPage() {
                       {user?.role === "admin" ? (
                         <Link
                           href={`/auth/profilePage?id=${u._id}`}
-                          className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-2.5 bg-slate-900 hover:bg-black text-white rounded-xl font-bold shadow-lg shadow-slate-200 transform active:scale-95 transition-all text-sm"
+                          className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-2.5 bg-white text-slate-900 hover:bg-indigo-50 rounded-xl font-bold shadow-lg transform active:scale-95 transition-all text-sm"
                         >
                           <Eye className="w-4 h-4" />
                           <span>See Profile</span>
@@ -317,7 +317,7 @@ export default function DashboardPage() {
                                   if (req) acceptMutation.mutate({ requestId: req._id, name: u.fullName });
                                 }}
                                 disabled={acceptMutation.isPending}
-                                className="flex-1 px-5 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-xl font-bold shadow-lg shadow-green-100 transform active:scale-95 transition-all text-sm"
+                                className="flex-1 px-5 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-xl font-bold shadow-lg transform active:scale-95 transition-all text-sm"
                               >
                                 {acceptMutation.isPending ? "..." : "Confirm"}
                               </button>
@@ -331,7 +331,7 @@ export default function DashboardPage() {
                                   if (req) rejectMutation.mutate(req._id);
                                 }}
                                 disabled={rejectMutation.isPending}
-                                className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold transform active:scale-95 transition-all text-sm"
+                                className="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl font-bold transform active:scale-95 transition-all text-sm"
                               >
                                 {rejectMutation.isPending ? "..." : "Delete"}
                               </button>
@@ -340,7 +340,7 @@ export default function DashboardPage() {
                             <button
                               onClick={() => rejectMutation.mutate(outgoingRequest._id)}
                               disabled={isRejecting}
-                              className="w-full sm:w-auto px-6 py-2.5 bg-slate-800 border border-slate-700 text-white rounded-xl font-bold hover:bg-slate-900 transition-all text-sm disabled:opacity-50"
+                              className="w-full sm:w-auto px-6 py-2.5 bg-slate-800 border border-slate-700 text-slate-200 rounded-xl font-bold hover:bg-slate-700 transition-all text-sm disabled:opacity-50"
                             >
                               {isRejecting ? "Wait..." : "Cancel Request"}
                             </button>
@@ -348,7 +348,7 @@ export default function DashboardPage() {
                             <button
                               onClick={() => sendMutation.mutate(u._id)}
                               disabled={isSending}
-                              className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold shadow-lg shadow-indigo-200 transform active:scale-95 transition-all text-sm"
+                              className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold shadow-lg shadow-indigo-500/20 transform active:scale-95 transition-all text-sm"
                             >
                               {isSending ? (
                                 <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
@@ -367,20 +367,20 @@ export default function DashboardPage() {
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center py-32 text-center px-6">
-              <div className="p-6 bg-slate-50 rounded-full mb-6">
-                <Users className="w-16 h-16 text-slate-300" />
+              <div className="p-6 bg-slate-800/50 rounded-full mb-6">
+                <Users className="w-16 h-16 text-slate-600" />
               </div>
-              <h3 className="text-xl font-bold text-slate-800 mb-2">
+              <h3 className="text-xl font-bold text-white mb-2">
                 {user?.role === "admin" ? "No users found" : "Nobody here yet"}
               </h3>
-              <p className="text-slate-500 max-w-xs">
+              <p className="text-slate-500 max-w-xs font-medium">
                 {user?.role === "admin"
                   ? "Try a different search term or check back later for new registrations."
                   : "Try searching for another name or check back later."}
               </p>
               <button
                 onClick={() => setSearch("")}
-                className="mt-6 text-indigo-600 font-bold hover:text-indigo-700"
+                className="mt-6 text-indigo-400 font-bold hover:text-indigo-300 transition-colors"
               >
                 Clear Search
               </button>

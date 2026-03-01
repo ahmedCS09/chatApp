@@ -85,45 +85,6 @@ export default function Home() {
       </section>
 
       {/* Dark Premium Footer */}
-      <footer className="bg-slate-950 pt-32 pb-12 border-t border-slate-900/50 overflow-hidden relative">
-        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-full h-[400px] bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-indigo-900/5 via-slate-950/0 to-transparent -z-10"></div>
-
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="grid md:grid-cols-4 gap-16 mb-24">
-            <div className="space-y-6">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-indigo-600 rounded-xl shadow-lg">
-                  <MessageCircle className="w-6 h-6 text-white" />
-                </div>
-                <span className="text-2xl font-black tracking-tighter">CHATTY</span>
-              </div>
-              <p className="text-slate-500 font-medium leading-relaxed">
-                The future of digital connection. Beautiful, fast, and secure messaging for everyone.
-              </p>
-              <div className="flex gap-4">
-                <SocialButton icon={<Github className="w-5 h-5" />} />
-                <SocialButton icon={<Mail className="w-5 h-5" />} />
-              </div>
-            </div>
-
-            <FooterColumn title="Platform" links={["Features", "Enterprise", "Security"]} />
-            <FooterColumn title="Resources" links={["Documentation", "API Status", "Dev Blog"]} />
-            <FooterColumn title="Support" links={["Help Center", "Community", "Safety"]} />
-          </div>
-
-          <div className="pt-12 border-t border-slate-900 flex flex-col md:flex-row justify-between items-center gap-6">
-            <p className="text-slate-600 text-sm font-bold">© 2026 CHATTY INC. ALL RIGHTS RESERVED.</p>
-            <div className="flex gap-10 text-slate-600 text-sm font-bold">
-              <Link href="#" className="hover:text-indigo-400 transition-colors uppercase">Privacy</Link>
-              <Link href="#" className="hover:text-indigo-400 transition-colors uppercase">Terms</Link>
-              <div className="flex items-center gap-2">
-                <span>MADE WITH</span>
-                <Heart className="w-4 h-4 text-red-500 fill-red-500 animate-pulse" />
-              </div>
-            </div>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }
@@ -144,25 +105,6 @@ const StatItem = ({ label, value }) => (
     <p className="text-5xl font-black text-white tracking-tighter">{value}</p>
     <p className="text-slate-500 font-black uppercase text-[10px] tracking-[0.3em]">{label}</p>
   </div>
-);
-
-const FooterColumn = ({ title, links }) => (
-  <div className="space-y-6">
-    <h4 className="text-slate-100 font-black text-sm uppercase tracking-widest">{title}</h4>
-    <ul className="space-y-4">
-      {links.map(link => (
-        <li key={link}>
-          <Link href="#" className="text-slate-600 hover:text-indigo-400 font-bold text-sm transition-colors">{link}</Link>
-        </li>
-      ))}
-    </ul>
-  </div>
-);
-
-const SocialButton = ({ icon }) => (
-  <button className="p-3 bg-slate-900 border border-slate-800 rounded-xl text-slate-500 hover:text-white hover:border-slate-700 transition-all shadow-xl">
-    {icon}
-  </button>
 );
 
 
