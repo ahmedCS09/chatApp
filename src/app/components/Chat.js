@@ -30,7 +30,7 @@ export default function Chat() {
     const [selectedFriend, setSelectedFriend] = useState(null);
     const [friendSearch, setFriendSearch] = useState("");
     const queryClient = useQueryClient();
-    const messagesEndRef = useRef(null);
+    const messagesContainerRef = useRef(null);
     const socketRef = useRef(null);
     const sidebarRef = useRef(null);
     const chatBoxRef = useRef(null);
@@ -69,9 +69,14 @@ export default function Chat() {
         resolver: yupResolver(chatSchema),
     });
 
-    // Auto-scroll to bottom
+    // Auto-scroll to bottom of message container only (prevents window scroll)
     const scrollToBottom = () => {
-        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+        if (messagesContainerRef.current) {
+            messagesContainerRef.current.scrollTo({
+                top: messagesContainerRef.current.scrollHeight,
+                behavior: "smooth"
+            });
+        }
     };
 
     // Send message
@@ -391,21 +396,10 @@ export default function Chat() {
                                     </div>
                                 </div>
                             </div>
-                            <div className="flex items-center gap-2">
-                                <button className="p-3 bg-slate-900 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 border border-white/5 transition-all shadow-sm">
-                                    <Phone className="w-5 h-5" />
-                                </button>
-                                <button className="p-3 bg-slate-900 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 border border-white/5 transition-all shadow-sm">
-                                    <Video className="w-5 h-5" />
-                                </button>
-                                <button className="p-3 bg-slate-900 rounded-xl text-indigo-400 border border-indigo-500/20 shadow-[0_0_15px_rgba(99,102,241,0.1)]">
-                                    <MoreVertical className="w-5 h-5" />
-                                </button>
-                            </div>
                         </div>
 
                         {/* Enhanced Message Scroller */}
-                        <div className="flex-1 overflow-y-auto p-6 md:p-10 space-y-6 bg-slate-950/30 custom-scrollbar">
+                        <div ref={messagesContainerRef} className="flex-1 overflow-y-auto p-6 md:p-10 space-y-6 bg-slate-950/30 custom-scrollbar">
                             {messagesData?.length > 0 ? (
                                 messagesData.map((msg, index) => {
                                     const senderId = msg.sender?._id || msg.sender;
@@ -423,7 +417,7 @@ export default function Chat() {
                                                 >
                                                     {msg.message}
                                                 </div>
-                                                <p className={`text-[9px] font-black uppercase tracking-widest mt-2 px-2 text-slate-500 ${!isFriendSender ? "text-right" : "text-left"}`}>
+                                                <p className={`text-[9px] font-black uppercase tracking-widest mt-2 px-2 text-slate-400 ${!isFriendSender ? "text-right" : "text-left"}`}>
                                                     {formatTime(msg.createdAt)}
                                                 </p>
                                             </div>
@@ -452,7 +446,6 @@ export default function Chat() {
                                     </div>
                                 </div>
                             )}
-                            <div ref={messagesEndRef} />
                         </div>
 
                         {/* Message Input */}

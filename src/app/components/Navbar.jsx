@@ -159,7 +159,7 @@ const Navbar = () => {
     if (!mounted) return null;
 
     return (
-        <nav className="absolute top-0 left-0 w-full z-[1000] bg-slate-950/80 backdrop-blur-md border-b border-white/5 shadow-sm px-6 py-4">
+        <nav className="absolute top-0 left-0 w-full z-[1000] bg-slate-900/95 backdrop-blur-md border-b border-white/5 shadow-sm px-6 py-4">
             <div className="max-w-7xl mx-auto flex items-center justify-between">
                 {/* Logo Section */}
                 <div className="flex items-center gap-4">
