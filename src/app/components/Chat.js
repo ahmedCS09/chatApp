@@ -79,6 +79,20 @@ export default function Chat() {
         }
     };
 
+    // Delete chat handler
+    const deleteChatHandler = async (chatId) => {
+        if (!selectedFriend) return;
+
+        const res = await axios.delete("/api/chat/deleteChat", {
+            data: { chatId }
+        });
+
+        if (res.status === 200) {
+            toast.success("Chat deleted successfully");
+            queryClient.invalidateQueries({ queryKey: ["messages", selectedFriend._id] });
+        }
+    };
+
     // Send message
     const submitHandler = async (data) => {
         if (!selectedFriend) {
@@ -421,6 +435,16 @@ export default function Chat() {
                                                     {formatTime(msg.createdAt)}
                                                 </p>
                                             </div>
+
+                                            {/* Delete Button */}
+                                            {!isFriendSender && (
+                                                <button
+                                                    onClick={() => deleteChatHandler(msg._id)}
+                                                    className="mt-2 px-3 py-1 bg-red-500 text-white rounded-lg text-xs font-black uppercase hover:bg-red-600 transition-colors"
+                                                >
+                                                    Delete
+                                                </button>
+                                            )}
                                         </div>
                                     )
                                 })
@@ -451,16 +475,9 @@ export default function Chat() {
                         {/* Message Input */}
                         <div className="p-6 border-t border-white/5 bg-slate-950/30 backdrop-blur-md">
                             <form onSubmit={handleSubmit(submitHandler)} className="relative flex items-center gap-4 max-w-5xl mx-auto">
-                                <div className="flex items-center gap-2">
-                                    <button type="button" className="p-3 text-slate-500 hover:text-indigo-400 transition-colors">
-                                        <Paperclip className="w-5 h-5" />
-                                    </button>
-                                    <button type="button" className="p-3 text-slate-500 hover:text-indigo-400 transition-colors">
-                                        <Smile className="w-5 h-5" />
-                                    </button>
-                                </div>
                                 <div className="flex-1 relative group">
                                     <input
+                                        dir="ltr"
                                         {...register("message")}
                                         className="w-full pl-6 pr-12 py-4 bg-slate-950/50 border border-white/5 rounded-2xl text-white placeholder-slate-600 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 shadow-inner transition-all font-medium"
                                         placeholder={`Message ${selectedFriend.fullName}...`}

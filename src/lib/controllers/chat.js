@@ -104,3 +104,37 @@ export const getMessages = async (req) => {
         return NextResponse.json({ error: error.message }, { status: 500 });
     }
 };
+
+export const deleteChat = async (req) => {
+    try {
+        await dbConnect();
+        const { chatId } = await req.json();
+
+        // Get token from cookies
+        const token = req.cookies.get("token")?.value;
+        if (!token) {
+            return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+        }
+
+        const decoded = await verifyToken(token);
+        const userId = decoded.id;
+
+        // Optional: Verify that the user deleting the message is actually the sender
+        const message = await Chat.findById(chatId);
+        if (!message) {
+            return NextResponse.json({ message: "Message not found" }, { status: 404 });
+        }
+
+        if (message.sender.toString() !== userId) {
+            return NextResponse.json({ message: "You can only delete your own messages" }, { status: 403 });
+        }
+
+        await Chat.findByIdAndDelete(chatId);
+
+        return NextResponse.json({ message: "Message deleted successfully" });
+
+    } catch (error) {
+        return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+};
+
